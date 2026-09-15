@@ -102,6 +102,10 @@ class ServidorJogo:
         j1 = Pyro5.api.Proxy(uri1)
         j2 = Pyro5.api.Proxy(uri2)
         tab = Tabuleiro()
+
+        #criacao de timeout para evitar vazamento de memoria.
+        j1._pyroTimeout = 5.0
+        j2._pyroTimeout = 5.0
         # Mapeamento estático dos papéis de cada jogador
         jogadores = [(j1, "X"), (j2, "O")]
 
@@ -158,9 +162,17 @@ class ServidorJogo:
             # Tratamento de resiliência: se um cliente fechar o terminal abruptamente (Broken Pipe),
             # capturamos o erro na rede e avisamos o jogador restante antes de matar a thread.
             print(f"[ERRO] Partida interrompida (Erro ou Desconexão): {e}")
-            try: j1.finalizar() 
+
+            #criacao da mensagem de vitoria por wo
+            msg_wo = "\nOponente desconectado. Você venceu!"
+            try: 
+                j1.receber_mensagem(msg_wo)
+                j1.finalizar() 
             except: pass
-            try: j2.finalizar()
+
+            try:
+                j2.receber_mensagem(msg_wo) 
+                j2.finalizar()
             except: pass
 
 def main():
