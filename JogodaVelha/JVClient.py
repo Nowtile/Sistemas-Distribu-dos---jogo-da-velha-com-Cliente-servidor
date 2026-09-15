@@ -10,7 +10,10 @@ import threading
 # ==========================================
 @Pyro5.api.expose
 class Jogador:
-    def __init__(self):
+
+    def __init__(self, nome=""):
+        self._nome = nome
+
         # SISTEMA DE SINCRONIZAÇÃO DE DUPLO EVENTO (Semáforos binários):
         
         # Sinaliza para a Main Thread (CLI) que é o momento de ler o teclado.
@@ -29,6 +32,11 @@ class Jogador:
     # O decorador @oneway avisa ao middleware que o servidor não precisa 
     # aguardar um "return". É o equivalente a mensagens UDP (fire-and-forget),
     # otimizando a responsividade geral do sistema.
+
+    #para o servidor conseguir ler o nome do jogador
+        def nome(self):
+            return self._nome
+
     @Pyro5.api.oneway
     def receber_mensagem(self, msg):
         print(msg)
@@ -76,7 +84,10 @@ def main():
         return
 
     # Registra este cliente na rede Pyro para que o Servidor possa invocar seus métodos
-    jogador = Jogador()
+
+    nome_jogador = input("Digite seu nome ")#informando nome do jogador
+    jogador = Jogador(nome_jogador)
+
     daemon = Pyro5.api.Daemon()
     jogador_uri = daemon.register(jogador)
 
